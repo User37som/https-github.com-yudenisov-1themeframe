@@ -21,35 +21,6 @@ function sql_table_exist(&$sqlite, $table) {
    return TRUE;
 }
 
-// Check if DB "thfrdb" exists, else create it or display error
-
-try {
-    $db = new PDO(
-	'sqlite:'.dirname(__FILE__).'/sqlite/thfrdb.sqlite3'
-	);
-} catch (PDOException $e) {
-    print "Ошибка соединеия!: " . $e->getMessage() . "<br/>";
-    die();
-}
-  // if table "default" does not exist, create it
-if(sql_table_exist( $db, 'newdefault') === FALSE ){
-  try {
-	// Create table
-    $sql = "CREATE TABLE newdefault (
-      id           INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-      option_name  TEXT,
-      option_value TEXT
-      )";
-    $db->query($sql);
-  } catch(PDOExeption $e){
-    print "Ошибка создания таблицы!: " . $e->getMessage() . "<br/>";
-    die();
-  }
-}
-
-
-$thfr_css = get_thfr();
-
 function get_thfr() {
 	global $db;
   $sql = "
@@ -58,8 +29,8 @@ function get_thfr() {
 	    WHERE option_name like 'thfr'
   ";
 	$result = $db->query($sql);
-	$row = $result->fetchAll(PDO::FETCH_ASSOC);
-	return(unserialize($row[0]));
+	$row = $result->fetch();
+	return(unserialize($row));
 	# return(json_decode($row[0], TRUE));
 }
 
@@ -80,8 +51,8 @@ function set_thfr($import_file = '') {
 	$stmt = $db->prepare($sql);
 	$stmt->bindValue(':thfr_css_prepared', $thfr_css_prepared, PDO::PARAM_STR);
 	$stmt->execute();
-	$result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-	if( $result->numRows() == 0 )
+	$result = $stmt->fetch();
+	if( $result )
 	{
 		$sql = "
       INSERT into newdefault
@@ -106,8 +77,8 @@ function reset_thfr() {
 	$stmt = $db->prepare($sql);
 	$stmt->bindValue(':thfr_css', $thfr_css, PDO::PARAM_STR);
 	$stmt->execute();
-	$result = $stmt->fetchAll(PDO::FETCH_ASSOC);
-	if( $result->numRows() == 0 )
+	$result = $stmt->fetch();
+	if( $result )
 	{
 		$sql = "
       INSERT into newdefault
@@ -126,6 +97,7 @@ function delete_drop_item() {
 	global $thfr_css;
 	$itemgroup = $_POST['itemgroup'];
 	$itemname = $_POST['itemname'];
+	$extension = "";
 	//
 	switch ($itemgroup) {
 		case "customdroplinks": $extension = '_custlink'; break;
@@ -161,7 +133,6 @@ function delete_drop_item() {
 			}
 		}
 	}
-
 
 	set_thfr();
 	echo $itemname . " has been deleted...";
@@ -210,15 +181,42 @@ function file_extension($filename) {
 	return $path_info['extension'];
 }
 
+// Check if DB "thfrdb" exists, else create it or display error
+
+try {
+    $db = new PDO(
+        'sqlite:'.dirname(__FILE__).'/sqlite/thfrdb.sqlite3'
+    );
+} catch (PDOException $e) {
+    print "Ошибка соединеия!: " . $e->getMessage() . "<br/>";
+    die();
+}
+  // if table "default" does not exist, create it
+if(sql_table_exist( $db, 'newdefault') === FALSE ){
+  try {
+	// Create table
+    $sql = "CREATE TABLE newdefault (
+      id           INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+      option_name  TEXT,
+      option_value TEXT
+      )";
+    $db->query($sql);
+} catch(PDOException $e){
+    print "Ошибка создания таблицы!: " . $e->getMessage() . "<br/>";
+    die();
+}
+}
+
+$thfr_css = get_thfr();
 
 // Default settings
 if (!isset($thfr_css['savedonce'])) {
 
 	$thfr_css = '';
 	$thfr_css = unserialize(file_get_contents(THFRPATH . 'styles/default.txt'));
-
+/*
 	# $thfr_css['read_more_text'] = "Continue reading &raquo; <a href='%permalink%'>%title%</a>";
-	/*
+
 	$thfr_css['read_more_text'] = "Read More &raquo;";
 
 
