@@ -153,6 +153,11 @@ $cur_group = (!isset($thfr_css['selectorgroup']) ? 'index' : $thfr_css['selector
 	<img src="<?php echo THFRURL; ?>images/defaultimg.png" style="margin: 30px 0 0 30px">
 </div><!-- tf-preview -->
 <!-- / PREVIEW -->
-
+<!-- Test Dump-->
+<h1>Thfr_css Variable dump</h1>
+<?php var_dump($thfr_css);
+$thfr_ser = serialize($thfr_css);
+var_dump($thfr_ser);
+?>
 </body>
 </html>

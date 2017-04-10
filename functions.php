@@ -15,7 +15,7 @@ function sql_table_exist(&$sqlite, $table) {
    $sql = "SELECT * FROM " . $table;
    try {
      $sqlite->query($sql);
-   } catch (PDOExeption $e ) {
+   } catch (PDOException $e ) {
      return FALSE;
    }
    return TRUE;
@@ -30,7 +30,8 @@ function get_thfr() {
   ";
 	$result = $db->query($sql);
 	$row = $result->fetch();
-	return(unserialize($row));
+    echo "<p>Variables".var_dump($row)."</p>";
+	return(unserialize($row[0]));
 	# return(json_decode($row[0], TRUE));
 }
 
@@ -42,14 +43,13 @@ function set_thfr($import_file = '') {
 		global $thfr_css; $thfr_css = serialize($thfr_css);
 		# global $thfr_css; $thfr_css = json_encode($thfr_css);
 	}
-	$thfr_css_prepared = sqlite_escape_string(stripslashes($thfr_css));
 	$sql =  "
     UPDATE newdefault
-  		SET option_value = :thfr_css_prepared
+  		SET option_value = :thfr_css
       WHERE option_name like 'thfr'
   ";
 	$stmt = $db->prepare($sql);
-	$stmt->bindValue(':thfr_css_prepared', $thfr_css_prepared, PDO::PARAM_STR);
+	$stmt->bindValue(':thfr_css', $thfr_css, PDO::PARAM_STR);
 	$stmt->execute();
 	$result = $stmt->fetch();
 	if( $result )
@@ -60,7 +60,7 @@ function set_thfr($import_file = '') {
 	      VALUES( 'thfr', :thfr_css_prepared );
     ";
 		$stmt = $db->prepare($sql);
-		$stmt->bindValue(':thfr_css_prepared', $thfr_css_prepared, PDO::PARAM_STR);
+		$stmt->bindValue(':thfr_css_prepared', $thfr_css, PDO::PARAM_STR);
 		$stmt->execute();
 	}
 	return;
