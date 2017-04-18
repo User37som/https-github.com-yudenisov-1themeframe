@@ -1,4 +1,18 @@
-<?php // Turn off PHP notices for now:
+<?php 
+/**
+* File with the most common functions of project
+*
+* This file contain the most common functions which uses
+* at the begin files of the project.
+* They are classified as SQLite functions, functions of 
+* manipulating with css, etc.
+*
+* @author yudenisov <yudenisov@mail.ru>
+* @copyright (C) Юрий А. Денисов(yudenisov) 2016-2017
+* @version 19 Beta
+*/
+
+// Turn off PHP notices for now:
 error_reporting(E_ALL & ~E_NOTICE);
 
 // Define various constants:
@@ -11,6 +25,16 @@ define('RELATIVETHFRUPLOADURL', RELATIVETHFRURL . 'uploads/');
 define('THFRUPLOADURL', RELATIVETHFRURL . 'uploads/');
 
 // Checks if table XY exists
+/**
+* Function sql_table_exist checks if table $table exist
+*
+* @param PDO &$sqlite -- SQLite descriptor
+* @param string $table -- name of testing table
+* @staticvar string $sql -- variable with SQL Query
+* @staticvar PDOExeption $e -- variable for PDO Exeption Value
+* @return boolean
+* @package sqlite database functions
+*/
 function sql_table_exist(&$sqlite, $table) {
    $sql = "SELECT * FROM " . $table;
    try {
@@ -21,6 +45,17 @@ function sql_table_exist(&$sqlite, $table) {
    return TRUE;
 }
 
+/**
+* Function get_thfr gets cssthfr structure from SQLite
+*
+* @global PDO $db
+* @param void
+* @staticvar string $sql -- variable with SQL Query
+* @staticvar PDOStatement $result -- variable with sql query results
+* @staticvar PDOStatement $row -- variable with a first result row of query
+* @return string array
+* @package sqlite database functions
+*/
 function get_thfr() {
 	global $db;
   $sql = "
@@ -30,69 +65,109 @@ function get_thfr() {
   ";
 	$result = $db->query($sql);
 	$row = $result->fetch();
-    echo "<p>Variables".var_dump($row)."</p>";
 	return(unserialize($row[0]));
 	# return(json_decode($row[0], TRUE));
 }
 
+/**
+* Function set_thfr saves thfr_css structure to SQLite file
+*
+* @global PDO $db -- SQLIte database descriptor
+* @global string array $thfr_css -- CSS data array
+* @param string $import_file (may be void) is imported data file
+* @staticvar string $thfr_css1 - Serialized CSS DATA array
+* @staticvar string $sql -- variable with SQL Query
+* @staticvar PDOStatement $stmt -- variable with sql query statement
+* @staticvar PDOStatement $result -- variable with sql query results
+* @staticvar PDOStatement $row -- variable with a first result row of query
+* @return void
+* @package sqlite database functions
+*/
 function set_thfr($import_file = '') {
+	global $thfr_css;
 	global $db;
 	if ($import_file != '') {
-		$thfr_css = $thfr_css = file_get_contents($import_file);
+		$thfr_css1 = file_get_contents($import_file);
+		$thfr_css = unserialize( $thfr_css1 );
+//		$thfr_css = json_decode(( $thfr_css1, TRUE );
 	} else {
-		global $thfr_css; $thfr_css = serialize($thfr_css);
-		# global $thfr_css; $thfr_css = json_encode($thfr_css);
+		$thfr_css1 = serialize($thfr_css);
+		# $thfr_css1 = json_encode($thfr_css);
 	}
 	$sql =  "
-    UPDATE newdefault
-  		SET option_value = :thfr_css
-      WHERE option_name like 'thfr'
-  ";
+		UPDATE newdefault
+			SET option_value = :thfr_css1
+      		WHERE option_name like 'thfr'
+	  ";
 	$stmt = $db->prepare($sql);
-	$stmt->bindValue(':thfr_css', $thfr_css, PDO::PARAM_STR);
+	$stmt->bindValue(':thfr_css1', $thfr_css1, PDO::PARAM_STR);
 	$stmt->execute();
 	$result = $stmt->fetch();
 	if( $result )
 	{
 		$sql = "
-      INSERT into newdefault
-	      (option_name, option_value)
-	      VALUES( 'thfr', :thfr_css_prepared );
-    ";
+			INSERT into newdefault
+	      		(option_name, option_value)
+	      		VALUES( 'thfr', :thfr_css_prepared );
+		";
 		$stmt = $db->prepare($sql);
-		$stmt->bindValue(':thfr_css_prepared', $thfr_css, PDO::PARAM_STR);
+		$stmt->bindValue(':thfr_css_prepared', $thfr_css1, PDO::PARAM_STR);
 		$stmt->execute();
 	}
 	return;
 }
 
+/**
+* Function reset_thfr is reset thfr_css structure at SQLite file
+*
+* This function makes empty the first row at SQLite 3 DATA file
+* @global PDO $db -- SQLIte database descriptor
+* @staticvar string $thfr_css1 - Serialized CSS DATA array
+* @staticvar string $sql -- variable with SQL Query
+* @staticvar PDOStatement $stmt -- variable with sql query statement
+* @staticvar PDOStatement $result -- variable with sql query results
+* @staticvar PDOStatement $row -- variable with a first result row of query
+* @return void
+* @package sqlite database functions
+*/
 function reset_thfr() {
 	global $db;
-	$thfr_css = '';
+	$thfr_css1 = '';
 	$sql = "
-    UPDATE newdefault
-  		SET option_value = :thfr_css
-      WHERE option_name like 'thfr'
-  ";
+		UPDATE newdefault
+  			SET option_value = :thfr_css1
+			WHERE option_name like 'thfr'
+		";
 	$stmt = $db->prepare($sql);
-	$stmt->bindValue(':thfr_css', $thfr_css, PDO::PARAM_STR);
+	$stmt->bindValue(':thfr_css1', $thfr_css1, PDO::PARAM_STR);
 	$stmt->execute();
 	$result = $stmt->fetch();
 	if( $result )
 	{
 		$sql = "
-      INSERT into newdefault
-	      (option_name, option_value)
-	      VALUES( 'thfr', :thfr_css );
-    ";
+			INSERT into newdefault
+				(option_name, option_value)
+				VALUES( 'thfr', :thfr_css1 );
+			";
 		$stmt = $db->prepare($sql);
-		$stmt->bindValue(':thfr_css', $thfr_css, PDO::PARAM_STR);
+		$stmt->bindValue(':thfr_css1', $thfr_css1, PDO::PARAM_STR);
 		$stmt->execute();
 	}
 	echo "Settings have been reset...";
 	return;
 }
 
+/**
+* Function delete_drop_item
+*
+* Function delete_drop_item is cleaning thfr_css string array of data
+* @global string array $thfr_css -- CSS data array
+* @staticvar string $itemgroup -- sent item group which must deleted
+* @staticvar string $itemname -- sent item name which must deleted
+* @staticvar string $extension -- group name extension
+* @staticvar string $dropitemname -- is full item name dropped
+* @staticvar string array $temparray -- is array of
+*/
 function delete_drop_item() {
 	global $thfr_css;
 	$itemgroup = $_POST['itemgroup'];
@@ -188,7 +263,7 @@ try {
         'sqlite:'.dirname(__FILE__).'/sqlite/thfrdb.sqlite3'
     );
 } catch (PDOException $e) {
-    print "Ошибка соединеия!: " . $e->getMessage() . "<br/>";
+    print "Connection error: " . $e->getMessage() . "<br/>";
     die();
 }
   // if table "default" does not exist, create it
@@ -202,7 +277,7 @@ if(sql_table_exist( $db, 'newdefault') === FALSE ){
       )";
     $db->query($sql);
 } catch(PDOException $e){
-    print "Ошибка создания таблицы!: " . $e->getMessage() . "<br/>";
+    print "Creating table error!: " . $e->getMessage() . "<br/>";
     die();
 }
 }

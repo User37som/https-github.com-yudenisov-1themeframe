@@ -1,9 +1,29 @@
+<?php
+/**
+ * The main file of progect
+ *
+ * This is a main file "index.php" jf the project
+ * "ThemeFrame" for building Wordpress Theme with
+ * rich design
+ *
+ * @author yudenisov <yudenisov@mail.ru>
+ * @copyright (C) Юрий А. Денисов(yudenisov) 2016-2017
+ * @version 19 Beta
+ */
+?>
 <?php include(dirname(__FILE__) . "/functions.php"); ?>
 <!DOCTYPE html>
 <html lang="en-US">
 <head>
 <meta http-equiv="Content-Type"  content="text/html; charset=UTF-8" />
 <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7" />
+    <link rev="made" href="mailto:yudenisov@mail.ru">
+    <link rel="copyright" href="http://yudenis.ucoz.ru">
+    <link rev="author" href="mailto:yudenisov@mail.ru">
+    <link rev="publisher" href="https://github.com/yudenisov/themeframe">
+    <meta name="author" content="Юрий А. Денисов">
+    <meta name="keywords" content="themeframe, wordpress, web application, theme creating">
+    <meta name="description" content="This is a main file of the application project for creating WordPress none-adaptive theme with rich design">
 <title>ThemeFrame Beta 19</title>
 <link rel="shortcut icon" href="favicon.ico" />
 <link rel="stylesheet" href="<?php echo THFRURL . 'css/jquery-ui-1.7.2.custom.css'; ?>" type="text/css" media="all" />
@@ -153,11 +173,10 @@ $cur_group = (!isset($thfr_css['selectorgroup']) ? 'index' : $thfr_css['selector
 	<img src="<?php echo THFRURL; ?>images/defaultimg.png" style="margin: 30px 0 0 30px">
 </div><!-- tf-preview -->
 <!-- / PREVIEW -->
-<!-- Test Dump-->
+<!-- Test Dump
 <h1>Thfr_css Variable dump</h1>
-<?php var_dump($thfr_css);
-$thfr_ser = serialize($thfr_css);
-var_dump($thfr_ser);
+<?php // var_dump($thfr_css);
 ?>
+ -->
 </body>
 </html>
